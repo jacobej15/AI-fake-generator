@@ -1,0 +1,284 @@
+const realImages = [
+  {
+    url: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=1200&auto=format&fit=crop&q=85",
+    note: "This is a landscape photograph from Unsplash. Notice the natural variation in the clouds, water, and terrain."
+  },
+  {
+    url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&auto=format&fit=crop&q=85",
+    note: "This is a real outdoor photograph. The scene has the irregular details and natural lighting of a camera image."
+  },
+  {
+    url: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=1200&auto=format&fit=crop&q=85",
+    note: "This is a real nature photograph. The light and small details come from a photographed scene."
+  },
+  {
+    url: "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=1200&auto=format&fit=crop&q=85",
+    note: "This is a real dog portrait photograph."
+  },
+  {
+    url: "https://images.unsplash.com/photo-1500534623283-312aade485b7?w=1200&auto=format&fit=crop&q=85",
+    note: "This is a real landscape photograph with natural atmospheric perspective."
+  },
+  {
+    url: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=1200&auto=format&fit=crop&q=85",
+    note: "This is a real flower photograph. Look at the fine variations in the petals and background."
+  },
+  {
+    url: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1200&auto=format&fit=crop&q=85",
+    note: "This is a real hiking landscape photograph with natural depth and texture across the valley."
+  },
+  {
+    url: "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=1200&auto=format&fit=crop&q=85",
+    note: "This is a real cat portrait photo. The fur and eye reflections show authentic camera detail."
+  },
+  {
+    url: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1200&auto=format&fit=crop&q=85",
+    note: "This is a real beach photograph, with natural light and atmospheric variation."
+  }
+];
+
+const aiPrompts = [
+  "cinematic tropical beach with turquoise water, palm trees, and a golden sunset, ultra-detailed photography",
+  "vibrant neon alley in Tokyo at night, wet pavement reflections, urban street photography",
+  "photorealistic red fox in a foggy pine forest, soft natural light, detailed wildlife portrait",
+  "cozy modern cabin beside a glacial lake at sunrise, alpine landscape photography",
+  "golden retriever puppy in a wildflower field, warm sunlight, playful portrait",
+  "futuristic glass villa surrounded by lush greenery, architectural photography, sharp detail",
+  "snowy owl perched on a frozen pine branch, cinematic wildlife portrait with icy atmosphere",
+  "dramatic desert canyon with red rock cliffs and a small stream, sunrise, realistic landscape",
+  "rooftop garden above a city skyline at dusk, colorful lights, professional photo composition",
+  "black swan drifting on a reflective lake, soft mist, wildlife photography",
+  "moonlit waterfall cascading through a dark forest, cinematic nature photography, luminous atmosphere",
+  "vintage bicycle leaning against a brick wall covered in ivy, editorial street photography",
+  "lush tropical island lagoon with crystal water and overhanging palms, travel photography",
+  "barista preparing a latte art coffee in a warm minimal cafe, lifestyle photography",
+  "autumn mountain pass with winding road, golden leaves, dramatic clouds, panoramic photography",
+  "orange tabby cat on a sunny windowsill with soft shadows, home portrait photography",
+  "lavender field under a soft blue sky with a tiny cottage in the distance, pastoral realism",
+  "rainforest waterfall in a dense jungle with mist and bright foliage, immersive nature photo",
+  "handmade ceramic mug on a wooden table beside a window with soft daylight, still life photography",
+  "colorful market street in Marrakech with lanterns, textiles, and warm sunlight, travel photo",
+  "luxury modern kitchen with marble counters and sunlight, interior lifestyle photography"
+];
+
+let deck = [];
+let index = 0;
+let score = 0;
+let answered = 0;
+let locked = false;
+let currentTeam = "A";
+const teamScores = { A: 0, B: 0, C: 0 };
+
+const $ = (id) => document.getElementById(id);
+
+function shuffle(items) {
+  const clone = [...items];
+  for (let i = clone.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [clone[i], clone[j]] = [clone[j], clone[i]];
+  }
+  return clone;
+}
+
+function aiUrl(prompt, w = 1100, seedBase = 1) {
+  return "https://image.pollinations.ai/prompt/" + encodeURIComponent(prompt) + "?width=" + w + "&height=700&nologo=true&seed=" + seedBase;
+}
+
+function makeDeck() {
+  const realCards = realImages.map((item, i) => ({
+    type: "real",
+    url: item.url,
+    note: item.note,
+    id: "r-" + i
+  }));
+
+  const aiCards = aiPrompts.map((prompt, i) => ({
+    type: "ai",
+    url: aiUrl(prompt, 1100, i + 7000),
+    note: "This picture was generated by an AI image service from a text prompt. Realistic AI images can look convincing, so the source label—not a visual guess—is the answer.",
+    id: "a-" + i
+  }));
+
+  const allCards = shuffle([...realCards, ...aiCards]);
+  const usedIds = new Set();
+  deck = [];
+
+  for (const card of allCards) {
+    if (usedIds.has(card.id)) continue;
+    usedIds.add(card.id);
+    deck.push(card);
+    if (deck.length === 10) break;
+  }
+
+  if (deck.length < 10) {
+    deck = shuffle([...realCards, ...aiCards]).slice(0, 10);
+  }
+}
+
+function updateStats() {
+  $("teamAScore").textContent = teamScores.A;
+  $("teamBScore").textContent = teamScores.B;
+  $("teamCScore").textContent = teamScores.C;
+  $("turnTeam").textContent = currentTeam === "A" ? "Team A" : currentTeam === "B" ? "Team B" : "Team C";
+  $("teamLabel").textContent = currentTeam === "A" ? "Team A" : currentTeam === "B" ? "Team B" : "Team C";
+  $("accuracy").textContent = answered ? Math.round((score / answered) * 100) + "%" : "—";
+  $("progress").style.width = (index / 10) * 100 + "%";
+
+  document.querySelectorAll(".teambtn").forEach((button) => {
+    button.classList.toggle("active", button.dataset.team === currentTeam);
+  });
+}
+
+function showCard() {
+  locked = false;
+  $("feedback").className = "feedback";
+  $("feedback").textContent = "";
+  $("nextBtn").classList.add("hidden");
+  $("realBtn").disabled = false;
+  $("aiBtn").disabled = false;
+  $("captionText").textContent = "Look for reflections, shadows, and small object details before guessing.";
+
+  $("round").textContent = index + 1;
+  $("loading").textContent = "Loading your picture…";
+  $("loading").style.display = "block";
+
+  const item = deck[index];
+  const img = $("gameImage");
+  img.style.display = "none";
+  img.onload = () => {
+    $("loading").style.display = "none";
+    img.style.display = "block";
+  };
+  img.onerror = () => {
+    $("loading").textContent = "This picture couldn't load. Try the next picture or restart.";
+  };
+  img.src = item.url;
+  updateStats();
+}
+
+function choose(choice) {
+  if (locked) return;
+
+  locked = true;
+  answered++;
+
+  const item = deck[index];
+  const correct = choice === item.type;
+
+  if (correct) {
+    score++;
+    teamScores[currentTeam]++;
+  }
+
+  $("realBtn").disabled = true;
+  $("aiBtn").disabled = true;
+
+  const feedback = $("feedback");
+  feedback.className = "feedback show " + (correct ? "good" : "bad");
+  feedback.innerHTML = (correct ? "<b>✓ Correct!</b> " : "<b>Not quite.</b> ") + "This was <b>" + (item.type === "real" ? "a REAL photograph" : "AI-GENERATED") + "</b>. " + item.note;
+  $("captionText").textContent = item.note;
+
+  $("nextBtn").classList.remove("hidden");
+  $("nextBtn").textContent = index === 9 ? "See results →" : "Next picture →";
+  updateStats();
+}
+
+function next() {
+  if (!locked) return;
+
+  if (index < 9) {
+    index++;
+    currentTeam = currentTeam === "A" ? "B" : currentTeam === "B" ? "C" : "A";
+    showCard();
+    return;
+  }
+
+  const winner = teamScores.A === teamScores.B && teamScores.B === teamScores.C
+    ? "It’s a three-way tie!"
+    : teamScores.A >= teamScores.B && teamScores.A >= teamScores.C
+      ? "Team A wins!"
+      : teamScores.B >= teamScores.A && teamScores.B >= teamScores.C
+        ? "Team B wins!"
+        : "Team C wins!";
+
+  $("progress").style.width = "100%";
+  $("round").textContent = "Complete";
+  $("gameImage").style.display = "none";
+  $("loading").style.display = "block";
+  $("loading").innerHTML = "<div><div style='font-size:2.6rem'>🏆</div><h2>Game complete!</h2><p><b>Team A:</b> " + teamScores.A + " · <b>Team B:</b> " + teamScores.B + " · <b>Team C:</b> " + teamScores.C + "</p><p>" + winner + "</p></div>";
+  $("feedback").className = "feedback";
+  $("nextBtn").classList.add("hidden");
+  $("realBtn").disabled = true;
+  $("aiBtn").disabled = true;
+}
+
+function restart() {
+  makeDeck();
+  index = 0;
+  score = 0;
+  answered = 0;
+  currentTeam = "A";
+  teamScores.A = 0;
+  teamScores.B = 0;
+  teamScores.C = 0;
+  showCard();
+}
+
+$("realBtn").addEventListener("click", () => choose("real"));
+$("aiBtn").addEventListener("click", () => choose("ai"));
+$("nextBtn").addEventListener("click", next);
+$("restartBtn").addEventListener("click", restart);
+
+document.querySelectorAll(".teambtn").forEach((button) => {
+  button.addEventListener("click", () => {
+    currentTeam = button.dataset.team;
+    updateStats();
+  });
+});
+
+document.querySelectorAll(".navbtn").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".navbtn").forEach((item) => item.classList.toggle("active", item === button));
+    document.querySelectorAll(".page").forEach((page) => page.classList.toggle("active", page.id === button.dataset.page));
+  });
+});
+
+$("generateBtn").addEventListener("click", () => {
+  const prompt = $("prompt").value.trim();
+  if (!prompt) {
+    $("prompt").focus();
+    return;
+  }
+
+  const button = $("generateBtn");
+  button.disabled = true;
+  button.textContent = "Generating…";
+
+  const full = $("style").value + ", " + prompt + ", highly detailed, high quality";
+  const url = aiUrl(full, 1200, Date.now() + Math.floor(Math.random() * 1000)) + "&height=800";
+  const area = $("generatedArea");
+  area.innerHTML = '<div class="image-loading">Creating your picture… This may take a little while.</div>';
+
+  const img = new Image();
+  img.alt = "AI-generated picture: " + prompt;
+  img.onload = () => {
+    area.innerHTML = "";
+    area.appendChild(img);
+    img.style.cssText = "width:100%;height:100%;object-fit:contain;position:relative";
+    $("downloadLink").href = url;
+    $("downloadLink").classList.remove("hidden");
+    button.disabled = false;
+    button.textContent = "✨ Generate another";
+  };
+
+  img.onerror = () => {
+    area.innerHTML = '<div class="image-loading">The image service did not respond. Please try again in a moment.</div>';
+    button.disabled = false;
+    button.textContent = "✨ Generate AI picture";
+  };
+
+  img.src = url;
+});
+
+makeDeck();
+showCard();

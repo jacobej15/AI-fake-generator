@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>REAL or AI? — Picture Challenge</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="logo">REAL <span>or</span> AI?</div>
+    <nav aria-label="Main navigation">
+      <button class="navbtn active" data-page="game">Play game</button>
+      <button class="navbtn" data-page="generate">AI generator</button>
+      <button class="navbtn" data-page="about">How to play</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">The picture challenge</div>
+      <h1>Can you spot<br>what's <span class="accent">REAL</span>?</h1>
+      <p>Some pictures are real photographs. Others are created with AI. Look closely, make your guess, and see how sharp your eye really is.</p>
+    </section>
+
+    <section id="game" class="page active">
+      <div class="layout">
+        <div class="card image-panel">
+          <div class="panel-label">Image challenge</div>
+          <div class="topline">
+            <strong>Round <span id="round">1</span> · <span id="teamLabel">Team A</span></strong>
+            <span class="pill" id="difficulty">Mixed challenge</span>
+          </div>
+          <div class="image-wrap">
+            <div class="image-loading" id="loading">Loading your picture…</div>
+            <img id="gameImage" alt="Mystery picture">
+          </div>
+          <div class="answers">
+            <button class="answer real" id="realBtn">📷 REAL PHOTO</button>
+            <button class="answer ai" id="aiBtn">✨ AI-GENERATED</button>
+          </div>
+          <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+          <button class="primary wide hidden" id="nextBtn">Next picture →</button>
+        </div>
+
+        <aside class="card side caption-panel">
+          <div class="panel-label alt">Round clue</div>
+          <div class="topline"><h2>Team score</h2><span class="pill" id="turnTeam">Team A</span></div>
+          <div class="team-switch">
+            <button class="teambtn active" data-team="A">Team A</button>
+            <button class="teambtn" data-team="B">Team B</button>
+            <button class="teambtn" data-team="C">Team C</button>
+          </div>
+          <div class="statgrid teamgrid">
+            <div class="stat team-a"><strong id="teamAScore">0</strong><small>Team A</small></div>
+            <div class="stat team-b"><strong id="teamBScore">0</strong><small>Team B</small></div>
+            <div class="stat team-c"><strong id="teamCScore">0</strong><small>Team C</small></div>
+          </div>
+          <div class="statgrid" style="margin-top:10px">
+            <div class="stat"><strong id="accuracy">—</strong><small>Accuracy</small></div>
+          </div>
+          <div class="muted" style="margin-top:18px">Game progress</div>
+          <div class="progress"><span id="progress"></span></div>
+          <div class="caption-box" id="captionBox">
+            <strong>Caption</strong>
+            <p id="captionText">Look for reflections, shadows, and small object details before guessing.</p>
+          </div>
+          <div class="muted">Study the details: reflections, shadows, hands, text, and background objects can offer clues. But no single clue proves an image is AI.</div>
+          <button class="secondary wide" id="restartBtn">↻ Restart game</button>
+        </aside>
+      </div>
+    </section>
+
+    <section id="generate" class="page">
+      <div class="generator">
+        <div class="card">
+          <div class="eyebrow">Create something</div>
+          <h2 class="section-title">AI picture generator</h2>
+          <p class="muted">Describe a picture and generate an AI image. Try a subject, setting, lighting, and style.</p>
+
+          <div class="field">
+            <label for="prompt">What should the picture show?</label>
+            <input id="prompt" maxlength="240" placeholder="Example: A golden retriever on a beach at sunset">
+          </div>
+
+          <div class="field">
+            <label for="style">Image style</label>
+            <select id="style">
+              <option>Photorealistic photograph</option>
+              <option>Cinematic photography</option>
+              <option>Studio portrait</option>
+              <option>Nature photography</option>
+              <option>Fantasy realism</option>
+            </select>
+          </div>
+
+          <button class="primary wide" id="generateBtn">✨ Generate AI picture</button>
+          <p class="notice">Generation uses an online image service and requires an internet connection. Availability and speed may vary.</p>
+        </div>
+
+        <div class="card generated document-panel">
+          <div class="panel-label">Generated visual</div>
+          <div class="topline"><strong>Your generated image</strong><span class="pill">AI</span></div>
+          <div id="generatedArea" class="image-wrap generated">
+            <div class="image-loading">Your creation will appear here.</div>
+          </div>
+          <a id="downloadLink" class="hidden" download="real-or-ai-generated.png">
+            <button class="secondary wide" type="button">Download image</button>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="page">
+      <div class="card">
+        <div class="eyebrow">Quick instructions</div>
+        <h2 class="section-title">How to play</h2>
+        <div class="how">
+          <div class="stat"><strong>01</strong><b>Look closely</b><div class="muted">Study the picture before choosing.</div></div>
+          <div class="stat"><strong>02</strong><b>Make a guess</b><div class="muted">Choose real photo or AI-generated.</div></div>
+          <div class="stat"><strong>03</strong><b>Learn & improve</b><div class="muted">See the answer, explanation, and score.</div></div>
+        </div>
+        <p class="muted" style="margin-top:20px">This is a learning game, not a forensic detector. The game knows the source label for its own sample images; visual inspection alone cannot reliably establish whether an arbitrary image is AI-generated.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>REAL or AI? · A simple image-literacy game</footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
